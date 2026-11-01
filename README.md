@@ -57,7 +57,7 @@ commands = ["exec zsh", "exec zsh"]
 
 只使用一种模式时可省略另一节。原生模式向 Profile 启动的 Shell 发送命令；Herdr 通过 `/bin/zsh -lic` 执行命令，因此会加载登录交互 Shell 配置。配置中的命令会作为 Shell 代码执行，请只使用可信配置。
 
-配置不存在、TOML 无效或当前模式参数不合法时会在打开 iTerm2 前报错。命令行 `--profile` 覆盖文件中的 `profile`，`--config` 指定替代配置文件。新入口不读取旧的 `CLAUDE_ITERM_*` 环境变量。
+配置不存在、TOML 无效或当前模式参数不合法时会在打开 iTerm2 前报错。命令行 `--profile` 覆盖文件中的 `profile`，`--config` 指定替代配置文件。
 
 ## 使用
 
@@ -98,13 +98,6 @@ brew uninstall iterm2-launcher
 ```
 
 升级和卸载不修改 XDG 配置。Herdr 客户端启动器保持运行直到客户端退出；升级前建议断开客户端，升级后重新连接，后台 pane 不因断开客户端而终止。
-
-## 从旧脚本迁移
-
-1. 将 `CLAUDE_ITERM_PAN1～4` 的非空命令按顺序写入 `[native].commands`；将原 Herdr 双栏命令写入 `[herdr].commands`。
-2. 使用默认的 `Default` Profile，无需配置 `profile`；仅在主动选择其他 Profile 时覆盖。
-3. 将快捷键、IDE 外部工具和个人 alias 改为 `iterm2-launch native` 或 `iterm2-launch herdr`。
-4. 确认新入口工作后，再删除旧 `open-agent-in-iterm`、`open-claude-in-iterm`、`open-herdr-in-iterm` 软链接和旧脚本目录。新包不自动创建旧命令别名。
 
 窗口选择保留两种旧入口各自的规则：原生模式按各 tab 当前 session 的 Profile 寻找窗口；Herdr 新建 tab 时检查所有 pane 的 Profile。Herdr 已有项目 tab 仍优先按固定项目标识跨窗口复用。
 
