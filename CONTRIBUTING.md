@@ -33,9 +33,8 @@ TypeScript、测试脚本、JSON 与 CI YAML 使用 `mise exec -- npm run format
 - `scripts/iterm/native.applescript`、`herdr.applescript`：各自的项目 tab 识别与初始化。
 - `examples/config.toml`：完整的最小用户配置，不含个人命令。
 - `test/`：配置与 CLI 测试，以及使用可执行替身的 Herdr 流程测试。
-- `scripts/package-release.ts`：只生成发布归档与 SHA-256，不修改 Formula。
-- `scripts/release.ts`：校验 tag、验证独立归档、发布 Release 和回写 Formula。
-- `scripts/release-utils.ts`：版本、校验和与 Formula 更新规则，配有无网络单元测试。
+- `scripts/build-release.ts`：只生成发布归档与 SHA-256，不修改 Formula。
+- `scripts/publish-release.ts`：校验 tag、验证独立归档、发布 Release 和回写 Formula；相关纯校验函数在同一文件内，测试直接导入，不触发文件读取或网络操作。
 
 macOS 自带 `osascript` / `osacompile` 和 Shell 用于系统集成，不通过版本管理器安装。安装 iTerm2 后执行：
 

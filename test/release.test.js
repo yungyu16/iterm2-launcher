@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { parseVersion, validateTag, verifyChecksum, updateFormula } from '../scripts/release-utils.ts';
+import { parseVersion, validateTag, verifyChecksum, updateFormula } from '../scripts/publish-release.ts';
 
 const oldHash = 'a'.repeat(64);
 const newHash = 'b'.repeat(64);
