@@ -1,21 +1,15 @@
 {
-  "compilerOptions": {
-    "target": "ES2023",
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
-    "rootDir": ".",
-    "outDir": "dist",
-    "strict": true,
-    "noEmitOnError": true,
-    "forceConsistentCasingInFileNames": true,
-    "skipLibCheck": true,
-    "types": [
-      "node"
-    ]
-  },
-  "include": [
-    "bin/**/*.ts",
-    "src/**/*.ts",
-    "scripts/package-release.ts"
-  ]
+    "compilerOptions": {
+        "target": "ES2023",
+        "module": "NodeNext",
+        "moduleResolution": "NodeNext",
+        "rootDir": ".",
+        "outDir": "dist",
+        "strict": true,
+        "noEmitOnError": true,
+        "forceConsistentCasingInFileNames": true,
+        "skipLibCheck": true,
+        "types": ["node"]
+    },
+    "include": ["src/**/*.ts", "scripts/package-release.ts"]
 }

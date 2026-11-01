@@ -1,8 +1,8 @@
 class Iterm2Launcher < Formula
   desc "Launch project workspaces in iTerm2 using native panes or Herdr"
   homepage "https://github.com/yungyu16/iterm2-launcher"
-  url "https://github.com/yungyu16/iterm2-launcher/releases/download/v0.1.1/iterm2-launcher-0.1.1.tar.gz"
-  sha256 "a9ae83f63b562ce78d17c1ff6c74b4685dbe8c543bdbc794ce8c238129c682c3"
+  url "https://github.com/yungyu16/iterm2-launcher/releases/download/v0.1.2/iterm2-launcher-0.1.2.tar.gz"
+  sha256 "40b24b3fe71543550b1cbfebd394e618428781bd3886cf988728d6f47aeda8d9"
   license "MIT"
 
   depends_on :macos
@@ -12,7 +12,7 @@ class Iterm2Launcher < Formula
     (bin/"iterm2-launch").write <<~SH
       #!/bin/sh
       command -v node >/dev/null 2>&1 || { echo "Node.js 24 is required on PATH (nvm or mise supported)." >&2; exit 1; }
-      exec node "#{libexec}/dist/bin/iterm2-launch.js" "$@"
+      exec node "#{libexec}/dist/src/bin.js" "$@"
     SH
     pkgshare.install "examples/config.toml"
   end

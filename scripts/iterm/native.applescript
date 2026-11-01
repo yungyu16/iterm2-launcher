@@ -72,6 +72,7 @@ on initializePanels(targetTab, profileName, projectDir, commands)
 		end if
 
 		repeat with panelIndex from 1 to panelCount
+			-- 在 tell 外取值，避免 iTerm2 将列表项解释为应用对象引用。
 			set panelCommand to item panelIndex of commands
 			set panelSession to item panelIndex of panelSessions
 			tell panelSession

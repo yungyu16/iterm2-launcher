@@ -8,16 +8,23 @@
 mise trust
 mise install
 mise exec -- npm ci --ignore-scripts
+mise exec -- npm run format:check
 mise exec -- npm run check
 mise exec -- npm test
 ```
 
 npm 只管理开发工具、依赖锁和构建任务；`private: true` 防止误发布 npm 包。依赖使用公共 registry，不使用机器上的私有镜像。TypeScript 开启 strict，输出到忽略的 `dist/`。
 
+## 格式与注释
+
+TypeScript、测试脚本、JSON 与 CI YAML 使用 `mise exec -- npm run format` 格式化，CI 使用 `format:check` 检查。格式规则统一引号、4 空格缩进和括号；行宽阈值保持较高，避免仅为列宽拆断日志、字符串和调用。AppleScript 保留 tab 缩进，使用系统 `osacompile` 检查语法，不交给不支持该语言的格式化器。
+
+注释重点解释会话生命周期、参数转义、环境传递和行为限制，不复述函数名或逐行解释赋值。改变相关行为时同步维护注释与 README。
+
 ## 代码结构
 
-- `bin/iterm2-launch.ts`：唯一可执行入口，只调用 `main()`。
-- `src/launch.ts`：CLI 参数解析、配置加载和模式调度。
+- `src/bin.ts`：唯一 CLI 入口，负责参数解析、运行环境与本地输入检查、退出状态。
+- `src/launch.ts`：接收校验后的请求，调度工作空间启动或 Herdr 客户端连接。
 - `src/iterm.ts`：AppleScript 参数适配、脚本定位和 Herdr 可执行文件检查。
 - `src/config.ts`：XDG 路径、TOML 解析与当前模式校验。
 - `src/herdr.ts`：稳定会话标识、服务就绪、布局初始化与客户端连接。

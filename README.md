@@ -105,4 +105,6 @@ brew uninstall iterm2-launcher
 3. 将快捷键、IDE 外部工具和个人 alias 改为 `iterm2-launch native` 或 `iterm2-launch herdr`。
 4. 确认新入口工作后，再删除旧 `open-agent-in-iterm`、`open-claude-in-iterm`、`open-herdr-in-iterm` 软链接和旧脚本目录。新包不自动创建旧命令别名。
 
+当前还有一处窗口选择差异：新建 Herdr tab 时，本版本只检查各 tab 当前 session 的 Profile，旧入口会检查所有 pane。混合 Profile 的窗口可能因此不被选中而另建窗口；已有项目 tab 的跨窗口复用不受影响。
+
 开发、测试、交互验收和发布流程见 [CONTRIBUTING.md](CONTRIBUTING.md)。本项目采用 [MIT License](LICENSE)，归档内 TOML 解析器保留自身许可证。
