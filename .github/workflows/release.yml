@@ -25,7 +25,7 @@ jobs:
               name: Publish verified release assets
               env:
                   GH_TOKEN: ${{ github.token }}
-              run: node scripts/publish-release.ts publish
+              run: node scripts/publish.ts publish
     formula:
         needs: publish
         runs-on: ubuntu-latest
@@ -41,4 +41,4 @@ jobs:
                   DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
                   RELEASE_VERSION: ${{ needs.publish.outputs.version }}
                   RELEASE_CHECKSUM: ${{ needs.publish.outputs.checksum }}
-              run: node scripts/publish-release.ts update-formula "$RELEASE_VERSION" "$RELEASE_CHECKSUM"
+              run: node scripts/publish.ts update-formula "$RELEASE_VERSION" "$RELEASE_CHECKSUM"

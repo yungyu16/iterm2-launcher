@@ -14,10 +14,10 @@
         "build": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\" && tsc",
         "check": "tsc --noEmit",
         "test": "npm run build && node --test test/*.test.js",
-        "release": "npm run build && node scripts/build-release.ts",
+        "release": "npm run build && node scripts/package.ts",
         "format": "prettier --write \"{src,scripts,test}/**/*.{ts,js}\" \"*.json\" \".github/workflows/*.yml\"",
         "format:check": "prettier --check \"{src,scripts,test}/**/*.{ts,js}\" \"*.json\" \".github/workflows/*.yml\"",
-        "test:package": "node scripts/publish-release.ts verify-package"
+        "test:package": "node scripts/publish.ts verify-package"
     },
     "dependencies": {
         "smol-toml": "1.9.1"
