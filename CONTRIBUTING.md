@@ -33,7 +33,9 @@ TypeScript、测试脚本、JSON 与 CI YAML 使用 `mise exec -- npm run format
 - `scripts/iterm/native.applescript`、`herdr.applescript`：各自的项目 tab 识别与初始化。
 - `examples/config.toml`：完整的最小用户配置，不含个人命令。
 - `test/`：配置与 CLI 测试，以及使用可执行替身的 Herdr 流程测试。
-- `scripts/package-release.ts`：生成发布归档、校验和，并更新 Formula 的版本 URL 和 SHA-256；安装逻辑直接维护在 Formula 文件中。
+- `scripts/package-release.ts`：只生成发布归档与 SHA-256，不修改 Formula。
+- `scripts/release.ts`：校验 tag、验证独立归档、发布 Release 和回写 Formula。
+- `scripts/release-utils.ts`：版本、校验和与 Formula 更新规则，配有无网络单元测试。
 
 macOS 自带 `osascript` / `osacompile` 和 Shell 用于系统集成，不通过版本管理器安装。安装 iTerm2 后执行：
 
@@ -59,22 +61,60 @@ osacompile -o /tmp/iterm2-launch-herdr.scpt scripts/iterm/herdr.applescript
 
 ## 发布 Homebrew 版本
 
-本仓库兼作 Tap，用户通过显式 Git URL 添加它，无需另建 `homebrew-*` 仓库。
+本仓库兼作 Tap。**推送 `vX.Y.Z` tag 会自动验证、发布 GitHub Release，再更新默认分支的 Formula。** 普通分支提交与 PR 只运行 CI；不会发布。暂不发布预发行版本，`v0.2.0-beta` 或版本不匹配的 tag 会失败。
 
-1. 修改 `package.json` 版本，并使用 `npm install --package-lock-only --ignore-scripts` 同步锁文件。
-2. 完成测试、编译与公开内容检查，再运行：
+### 维护者操作
 
-   ```sh
-   mise exec -- npm ci --ignore-scripts
-   mise exec -- npm test
-   mise exec -- npm run release
-   ```
+先提交本次功能与文档，再提升版本。以下以 `0.1.5` 为例，替换为实际的新版本：
 
-3. 检查 `.release/` 中的归档和 SHA-256，确认包含编译代码、AppleScript、示例及 TOML 解析器许可证，没有开发依赖或本地配置。`Formula/iterm2-launcher.rb` 已被同步为对应版本及 SHA-256。
-4. 提交源码、锁文件、Formula；创建相同版本的 Git tag，并推送。不要提交 `.release/`、`dist/` 或 `node_modules/`。
-5. 在该 tag 的 GitHub Release 中上传生成的 `.tar.gz` 与 `.sha256`。Formula 下载的是这个归档，不是 GitHub 自动生成的源码包。发布完成前不要向用户宣称该版本已可安装。
-6. 从远端 Tap 安装并执行 `brew test yungyu16/iterm2-launcher/iterm2-launcher`，测试环境需确保 Node 24 在 PATH 中（Homebrew 的隔离测试环境可能需要显式传入 PATH）。核对 `iterm2-launch --version`，再按上述清单验收 GUI。
+```sh
+mise exec -- npm version 0.1.5 --no-git-tag-version
+mise exec -- npm run format:check
+mise exec -- npm run check
+mise exec -- npm test
 
-打包后不要重新生成另一份归档再上传：gzip 时间戳等可能改变 SHA-256。需要重打包时同时重新生成并提交 Formula。已发布的版本不覆盖资产，修复使用新版本。
+git add package.json package-lock.json
+git commit -m "chore: 发布 0.1.5"
+git tag v0.1.5
+git push origin main
+git push origin v0.1.5
+```
 
-维护内容按职责更新：CLI/配置契约更新 README，开发和发布流程更新本文；不要把单次调试日志或历史测试数量追加为长期说明。
+tag 必须指向准备发布的提交，且与该提交 `package.json` 的版本严格一致。`npm version` 同步更新锁文件；不要手改锁文件。不要手工修改 Formula 的 URL/SHA，也不用在本机上传 Release 资产。
+
+GitHub Actions 的 **Release** 工作流全部成功后，默认分支会增加一条 `chore: 更新 Homebrew 至 ...` 提交。维护者使用 `git pull --ff-only` 同步这条提交，用户按 README 的 Homebrew 升级方式更新。
+
+### 自动化顺序与权限
+
+1. **verify**：复用 CI，核对 tag/版本，执行格式、类型、测试、AppleScript 编译，并验证独立发布归档。
+2. **publish**：在干净构建后生成 `.tar.gz` 和 `.sha256`，解包到临时目录验证 CLI 版本、帮助、配置错误路径和必需资源，再创建草稿 Release、上传资产并正式发布。
+3. **formula**：发布成功后，通过 GitHub Contents API 更新默认分支的 Formula URL/SHA。按文件 SHA 做冲突检查，发生并发冲突时重新读取；已是更高版本时不降级，同版本不同 SHA 时拒绝覆盖。
+
+工作流默认只有 `contents: read`；只有 publish/formula 两个 job 获得 `contents: write`。使用仓库内置 `GITHUB_TOKEN`，不需要个人访问令牌。若以后为默认分支设置禁止机器人直写的保护规则，Formula 回写会失败，需要调整为 PR 审核流程；不会绕过保护规则。
+
+Formula 更新在资产正式可下载后发生，避免 Tap 先指向尚未上传的文件。由 `GITHUB_TOKEN` 写回的 Formula 提交不依赖再次触发 CI来完成发布；核心产物已在前置步骤验证。
+
+### 产物与本地排查
+
+```sh
+mise exec -- npm ci --ignore-scripts
+mise exec -- npm run release
+mise exec -- npm run test:package
+```
+
+构建会清空 `dist/` 再编译，防止删除或改名的源码留下旧产物。打包只收录运行代码、AppleScript、示例、文档及 TOML 解析器及其许可证，不收录开发依赖。产物在忽略的 `.release/` 下；本地打包不会改动 Formula 或上传文件。
+
+安装逻辑直接维护在 `Formula/iterm2-launcher.rb`；如果修改了安装结构，仍需验证真实 Homebrew 安装及 `brew test`。归档检查不等于 Homebrew 安装验收，也不等于 GUI 验收。CI 与 Release 不启动真实 Agent。
+
+### 失败、重试与回滚
+
+- tag/版本或测试失败：不发布、不更新 Formula。修复代码后使用新的版本/tag，不移动已发布 tag。
+- 网络临时失败：可在 Actions 页面重跑失败的 job。
+- Release 已存在：重新下载原资产并校验，使用原 SHA 恢复后续步骤，不覆盖同版本资产。已完整上传的草稿可继续发布；草稿缺少资产或校验失败时停止，由维护者检查，不能把损坏资产当成成功发布。
+- Formula 回写失败：已发布 Release 保留，用户仍使用旧 Formula；重跑 formula job 即可，不需要重新打包。
+- 旧 tag 重跑：可以保留对应 Release，但不会把 Formula 从新版本降回旧版本。
+- 功能回滚：优先回退源码后发布更高的补丁版本。需要紧急恢复旧 Formula 时由维护者显式操作，不通过重跑旧工作流绕过防降级规则。
+
+不要重新打包并覆盖已发布版本：gzip 元数据可能改变 SHA-256。正式资产、tag 和版本作为一个整体保留。
+
+维护内容按职责更新：CLI/配置契约更新 README，开发与发布流程更新本文；不要将单次调试日志或历史测试数量追加为长期说明。

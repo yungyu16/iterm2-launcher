@@ -1,6 +1,6 @@
 {
     "name": "iterm2-launcher",
-    "version": "0.1.3",
+    "version": "0.1.4",
     "private": true,
     "description": "Project workspaces in iTerm2 with native panes or Herdr",
     "type": "module",
@@ -11,12 +11,13 @@
         "node": "24.x"
     },
     "scripts": {
-        "build": "tsc",
+        "build": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\" && tsc",
         "check": "tsc --noEmit",
         "test": "npm run build && node --test test/*.test.js",
         "release": "npm run build && node scripts/package-release.ts",
         "format": "prettier --write \"{src,scripts,test}/**/*.{ts,js}\" \"*.json\" \".github/workflows/*.yml\"",
-        "format:check": "prettier --check \"{src,scripts,test}/**/*.{ts,js}\" \"*.json\" \".github/workflows/*.yml\""
+        "format:check": "prettier --check \"{src,scripts,test}/**/*.{ts,js}\" \"*.json\" \".github/workflows/*.yml\"",
+        "test:package": "node scripts/release.ts verify-package"
     },
     "dependencies": {
         "smol-toml": "1.9.1"

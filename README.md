@@ -101,4 +101,4 @@ brew uninstall iterm2-launcher
 
 窗口选择保留两种旧入口各自的规则：原生模式按各 tab 当前 session 的 Profile 寻找窗口；Herdr 新建 tab 时检查所有 pane 的 Profile。Herdr 已有项目 tab 仍优先按固定项目标识跨窗口复用。
 
-开发、测试、交互验收和发布流程见 [CONTRIBUTING.md](CONTRIBUTING.md)。本项目采用 [MIT License](LICENSE)，归档内 TOML 解析器保留自身许可证。
+维护者推送与版本号一致的 `vX.Y.Z` tag 后，GitHub Actions 自动验证、发布 Release 并更新 Homebrew Formula。开发、测试、交互验收和发布流程见 [CONTRIBUTING.md](CONTRIBUTING.md)。本项目采用 [MIT License](LICENSE)，归档内 TOML 解析器保留自身许可证。

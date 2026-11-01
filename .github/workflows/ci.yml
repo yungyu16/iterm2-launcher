@@ -1,15 +1,21 @@
 name: CI
 on:
     push:
+        branches: [main]
     pull_request:
+    workflow_call:
 permissions:
     contents: read
 jobs:
     test:
         runs-on: macos-latest
+        timeout-minutes: 20
         steps:
             - uses: actions/checkout@v4
             - uses: jdx/mise-action@v2
+            - name: Validate release tag
+              if: startsWith(github.ref, 'refs/tags/')
+              run: node scripts/release.ts check-tag
             - run: npm ci --ignore-scripts
             - run: npm run format:check
             - run: npm run check
@@ -21,3 +27,7 @@ jobs:
                   osacompile -o /tmp/native.scpt scripts/iterm/native.applescript
                   osacompile -o /tmp/herdr.scpt scripts/iterm/herdr.applescript
                   osacompile -o /tmp/common.scpt scripts/iterm/common.applescript
+            - name: Verify distributable
+              run: |
+                  npm run release
+                  npm run test:package

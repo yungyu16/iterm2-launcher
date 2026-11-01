@@ -7,3 +7,4 @@
 - 修改后运行 `npm test`、`npm run check`，macOS 上编译两个 AppleScript。GUI 验收单独报告，不以单测替代。
 - 保留 Herdr 的 `ait-` 路径摘要和 `user.agent_in_term_cwd` 标识，变更必须考虑已有会话。
 - 发布由单仓库内的 `Formula/iterm2-launcher.rb` 和 GitHub Release 配合完成；安装包只包含明确列出的文件。
+- 发布使用 `vX.Y.Z` tag 触发 Release 工作流；本地打包不改 Formula，不手动覆盖正式 Release 资产。失败重试和防降级规则见 CONTRIBUTING。
