@@ -1,0 +1,21 @@
+name: CI
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: jdx/mise-action@v2
+      - run: npm ci --ignore-scripts
+      - run: npm run check
+      - run: npm test
+      - name: Compile AppleScript against iTerm2 dictionary
+        run: |
+          brew install --cask iterm2
+          osacompile -o /tmp/native.scpt scripts/iterm/native.applescript
+          osacompile -o /tmp/herdr.scpt scripts/iterm/herdr.applescript
+          osacompile -o /tmp/common.scpt scripts/iterm/common.applescript

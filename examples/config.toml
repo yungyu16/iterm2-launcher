@@ -1,0 +1,10 @@
+# 使用 iTerm2 中已存在的 Profile。
+profile = "Default"
+
+[native]
+# 按顺序排列；1～4 个非空命令。
+commands = ["exec zsh", "exec zsh"]
+
+[herdr]
+# 左、右两栏；通过 /bin/zsh -lic 执行，支持用户 alias 和函数。
+commands = ["exec zsh", "exec zsh"]

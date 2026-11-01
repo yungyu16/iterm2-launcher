@@ -1,0 +1,27 @@
+# 依赖与编译产物
+node_modules/
+dist/
+*.tsbuildinfo
+*.scpt
+
+# 测试与发布临时产物
+coverage/
+.release/
+npm-debug.log*
+
+# 本地配置与凭据（示例配置明确保留）
+.env
+.env.*
+!.env.example
+.mise.local.toml
+.mise.*.local.toml
+config.local.toml
+
+# IDE 与操作系统
+.idea/
+.vscode/
+.DS_Store
+._*
+*~
+*.swp
+*.swo
