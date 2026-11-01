@@ -16,6 +16,7 @@ jobs:
       - name: Compile AppleScript against iTerm2 dictionary
         run: |
           brew install --cask iterm2
+          /System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -f /Applications/iTerm.app
           osacompile -o /tmp/native.scpt scripts/iterm/native.applescript
           osacompile -o /tmp/herdr.scpt scripts/iterm/herdr.applescript
           osacompile -o /tmp/common.scpt scripts/iterm/common.applescript
