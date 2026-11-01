@@ -1,6 +1,6 @@
 {
     "name": "iterm2-launcher",
-    "version": "0.1.2",
+    "version": "0.1.3",
     "private": true,
     "description": "Project workspaces in iTerm2 with native panes or Herdr",
     "type": "module",

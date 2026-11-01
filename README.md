@@ -21,6 +21,10 @@ brew install yungyu16/iterm2-launcher/iterm2-launcher
 
 ## 配置
 
+公共包负责窗口、布局、会话管理及配置校验；个人配置负责运行哪些命令、选择哪个 Profile。包内不预置特定 Agent 或个人 Shell 环境，也不会在安装、升级时覆盖用户配置。
+
+个人配置可由自己的 dotfiles 仓库维护，再软链到下述 XDG 路径。仓库位置不属于工具契约，也不需要为 dotfiles 增加专用代码。环境变量仅用于 XDG 目录及运行时 PATH，不再并行提供一套面板命令环境变量。
+
 默认读取 `$XDG_CONFIG_HOME/iterm2-launcher/config.toml`。`XDG_CONFIG_HOME` 未设置或为空时使用 `~/.config/iterm2-launcher/config.toml`；相对路径会报错。
 
 首次复制示例（已有文件不会被覆盖）：
@@ -36,16 +40,14 @@ fi
 然后编辑配置，例如：
 
 ```toml
-profile = "Default"
-
 [native]
-commands = ["pi", "codex"]
+commands = ["exec zsh", "exec zsh"]
 
 [herdr]
-commands = ["pi", "codex"]
+commands = ["exec zsh", "exec zsh"]
 ```
 
-安装包附带的示例使用 `exec zsh`，不会假设已安装某个 Agent。这里的 `pi`、`codex` 可替换成你自己的命令、alias 或 Shell 函数；它们必须在对应 Shell 中可用。
+公共示例只启动普通 Shell，省略 `profile` 时使用名为 `Default` 的 iTerm2 Profile。按个人需求将 `exec zsh` 替换为自己的命令、alias 或 Shell 函数；它们必须在对应 Shell 中可用。
 
 | 配置项 | 约束 |
 | --- | --- |
@@ -62,7 +64,6 @@ commands = ["pi", "codex"]
 ```sh
 iterm2-launch native
 iterm2-launch herdr /path/to/project
-iterm2-launch native /path/to/project --profile Agent
 iterm2-launch herdr --config /path/to/config.toml
 iterm2-launch --help
 iterm2-launch --version
@@ -101,10 +102,10 @@ brew uninstall iterm2-launcher
 ## 从旧脚本迁移
 
 1. 将 `CLAUDE_ITERM_PAN1～4` 的非空命令按顺序写入 `[native].commands`；将原 Herdr 双栏命令写入 `[herdr].commands`。
-2. 如原来使用 `Agent` Profile，在配置中显式设置 `profile = "Agent"`。
+2. 使用默认的 `Default` Profile，无需配置 `profile`；仅在主动选择其他 Profile 时覆盖。
 3. 将快捷键、IDE 外部工具和个人 alias 改为 `iterm2-launch native` 或 `iterm2-launch herdr`。
 4. 确认新入口工作后，再删除旧 `open-agent-in-iterm`、`open-claude-in-iterm`、`open-herdr-in-iterm` 软链接和旧脚本目录。新包不自动创建旧命令别名。
 
-当前还有一处窗口选择差异：新建 Herdr tab 时，本版本只检查各 tab 当前 session 的 Profile，旧入口会检查所有 pane。混合 Profile 的窗口可能因此不被选中而另建窗口；已有项目 tab 的跨窗口复用不受影响。
+窗口选择保留两种旧入口各自的规则：原生模式按各 tab 当前 session 的 Profile 寻找窗口；Herdr 新建 tab 时检查所有 pane 的 Profile。Herdr 已有项目 tab 仍优先按固定项目标识跨窗口复用。
 
 开发、测试、交互验收和发布流程见 [CONTRIBUTING.md](CONTRIBUTING.md)。本项目采用 [MIT License](LICENSE)，归档内 TOML 解析器保留自身许可证。

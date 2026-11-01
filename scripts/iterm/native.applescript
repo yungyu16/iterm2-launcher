@@ -9,7 +9,7 @@ on run argv
 	end repeat
 	if (count of commands) is 0 then error "至少需要一个面板命令"
 
-	set targetWindow to helpers's findProfileWindow(profileName)
+	set targetWindow to helpers's findProfileWindow(profileName, false)
 	set targetTab to missing value
 	tell application id "com.googlecode.iterm2"
 		if targetWindow is missing value then

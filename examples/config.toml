@@ -1,5 +1,5 @@
-# 使用 iTerm2 中已存在的 Profile。
-profile = "Default"
+# 省略 profile，使用 iTerm2 中名为 Default 的 Profile。
+# 如需其他已存在的 Profile，可自行添加 profile 字段。
 
 [native]
 # 按顺序排列；1～4 个非空命令。

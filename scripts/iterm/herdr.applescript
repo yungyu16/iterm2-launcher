@@ -6,7 +6,7 @@ on run argv
 	set {targetWindow, targetTab} to my findProjectTarget(projectDir)
 	set outcome to "reused"
 	if targetTab is missing value then
-		set targetWindow to helpers's findProfileWindow(profileName)
+		set targetWindow to helpers's findProfileWindow(profileName, true)
 		set launchCommand to item 3 of argv
 		tell application id "com.googlecode.iterm2"
 			if targetWindow is missing value then
