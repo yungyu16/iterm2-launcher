@@ -8,7 +8,7 @@ on run argv
 	if targetTab is missing value then
 		set targetWindow to helpers's findProfileWindow(profileName)
 		set launchCommand to item 3 of argv
-		tell application "iTerm2"
+		tell application id "com.googlecode.iterm2"
 			if targetWindow is missing value then
 				set targetWindow to (create window with profile profileName command launchCommand)
 				set targetTab to current tab of targetWindow
@@ -29,7 +29,7 @@ end run
 
 -- 固定标识不随内部 cd 改变；保留旧变量名以识别已有 tab。
 on findProjectTarget(projectDir)
-	tell application "iTerm2"
+	tell application id "com.googlecode.iterm2"
 		repeat with w in windows
 			repeat with t in tabs of w
 				repeat with s in sessions of t

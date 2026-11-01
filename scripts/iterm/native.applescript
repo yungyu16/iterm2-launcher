@@ -11,7 +11,7 @@ on run argv
 
 	set targetWindow to helpers's findProfileWindow(profileName)
 	set targetTab to missing value
-	tell application "iTerm2"
+	tell application id "com.googlecode.iterm2"
 		if targetWindow is missing value then
 			set targetWindow to (create window with profile profileName)
 			set targetTab to current tab of targetWindow
@@ -33,7 +33,7 @@ end run
 
 -- 原生模式保留按当前 session.path 复用的既有语义。
 on findProjectTab(targetWindow, projectDir)
-	tell application "iTerm2"
+	tell application id "com.googlecode.iterm2"
 		repeat with t in tabs of targetWindow
 			tell current session of t
 				if (variable named "session.path") is projectDir then return t
@@ -45,7 +45,7 @@ end findProjectTab
 
 on initializePanels(targetTab, profileName, projectDir, commands)
 	set panelCount to count of commands
-	tell application "iTerm2"
+	tell application id "com.googlecode.iterm2"
 		set firstSession to current session of targetTab
 		set panelSessions to {firstSession}
 		if panelCount is 4 then
