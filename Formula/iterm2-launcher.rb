@@ -1,8 +1,8 @@
 class Iterm2Launcher < Formula
   desc "Launch project workspaces in iTerm2 using native panes or Herdr"
   homepage "https://github.com/yungyu16/iterm2-launcher"
-  url "https://github.com/yungyu16/iterm2-launcher/releases/download/v0.1.0/iterm2-launcher-0.1.0.tar.gz"
-  sha256 "0c2facd5cbc1d00284d61e5b9ec86a53c41f1dab63231524f37ac676a1792671"
+  url "https://github.com/yungyu16/iterm2-launcher/releases/download/v0.1.1/iterm2-launcher-0.1.1.tar.gz"
+  sha256 "a9ae83f63b562ce78d17c1ff6c74b4685dbe8c543bdbc794ce8c238129c682c3"
   license "MIT"
 
   depends_on :macos
