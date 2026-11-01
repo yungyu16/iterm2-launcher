@@ -1,8 +1,9 @@
 import { spawnSync } from 'node:child_process';
-import { statSync } from 'node:fs';
+import { accessSync, constants, statSync } from 'node:fs';
 import { delimiter, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { sessionName, shellQuote } from './herdr.js';
+import { probeHerdr } from './herdr-api.js';
 import type { Mode, LaunchConfig } from './config.js';
 
 // 构建后模块位于 dist/src；资源跟随安装包定位，不依赖调用者 cwd。
@@ -19,10 +20,14 @@ function findHerdr(): string {
     for (const directory of (process.env.PATH ?? '').split(delimiter)) {
         const binary = resolve(directory, 'herdr');
         try {
-            if (statSync(binary).isFile() && spawnSync(binary, ['--version'], { stdio: 'ignore' }).status === 0) return binary;
+            if (!statSync(binary).isFile()) continue;
+            accessSync(binary, constants.X_OK);
         } catch {
-            /* PATH 中没有这个文件，继续检查下一个目录。 */
+            // 跳过不存在或不可执行的候选；已找到的程序运行失败则应报真实错误。
+            continue;
         }
+        probeHerdr(binary);
+        return binary;
     }
     throw new Error('PATH 中找不到可运行的 Herdr，请先安装');
 }

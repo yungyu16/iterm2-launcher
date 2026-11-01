@@ -47,7 +47,7 @@ osacompile -o /tmp/iterm2-launch-herdr.scpt scripts/iterm/herdr.applescript
 
 ## 验证范围
 
-自动测试覆盖配置优先级和错误、命令数量、XDG 路径、Shell 引号、会话标识、Herdr 新建/复用/分屏失败，以及不依赖 GUI 的帮助和版本。CI 还编译 AppleScript；这些检查不证明 GUI 焦点或真实 Agent 的长期运行正常。
+自动测试覆盖配置优先级和错误、命令数量、XDG 路径、Shell 引号、会话标识、Herdr 新建/复用/分屏失败、结构化错误分类、启动总预算、忽略 SIGTERM 的请求子进程超时终止，以及不依赖 GUI 的帮助和版本。CI 还编译 AppleScript；这些检查不证明 GUI 焦点或真实 Agent 的长期运行正常。
 
 发布前在隔离的测试目录和 Profile 中进行交互验收：
 

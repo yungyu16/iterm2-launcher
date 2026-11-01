@@ -18,6 +18,25 @@ fs.appendFileSync(process.env.CALL_LOG, JSON.stringify(args) + '\\n');
 const command = args.slice(2);
 const scenario = process.env.SCENARIO;
 if (!command.length) process.exit(0);
+const marker = process.env.CALL_LOG + '.started';
+if (command[0] === 'server') { fs.writeFileSync(marker, 'started'); process.exit(0); }
+function unavailable(stream = 'stderr') {
+  const message = JSON.stringify({error:{code:'server_not_running',message:'test server unavailable'}});
+  process[stream].write(message); process.exit(1);
+}
+if (command.join(' ') === 'workspace list') {
+  if (scenario === 'initial-hang') { process.on('SIGTERM',()=>{}); setInterval(()=>{},1000); return; }
+  if (scenario === 'invalid-json') { console.log('not-json'); process.exit(0); }
+  if (scenario === 'schema-error') { console.log('{"result":{"workspaces":null}}'); process.exit(0); }
+  if (scenario === 'permission-error') { console.error(JSON.stringify({error:{code:'permission_denied',message:'test denied'}})); process.exit(1); }
+  if (scenario === 'plain-error') { console.error('server_not_running'); process.exit(1); }
+  if (scenario.startsWith('startup')) {
+    if (!fs.existsSync(marker) || scenario === 'startup-never') unavailable(scenario === 'startup-stdout' ? 'stdout' : 'stderr');
+    if (scenario === 'startup-schema') { console.log('{"result":{"workspaces":null}}'); process.exit(0); }
+    if (scenario === 'startup-hang') { process.on('SIGTERM',()=>{}); setInterval(()=>{},1000); return; }
+    console.log('{"result":{"workspaces":[{}]}}'); process.exit(0);
+  }
+}
 let result;
 if (command.join(' ') === 'workspace list') {
   result = {workspaces: scenario === 'existing' ? [{id:'old'}] : []};
@@ -33,12 +52,13 @@ console.log(JSON.stringify({result}));
     );
     try {
         const commands = ["echo 'left'; echo $HOME", 'echo right'];
+        const started = performance.now();
         const result = spawnSync(process.execPath, [resolve('dist/src/bin.js'), '_session', dir, 'ait-test', binary, JSON.stringify(commands)], {
             encoding: 'utf8',
             env: { ...process.env, CALL_LOG: log, SCENARIO: scenario },
             timeout: 10000,
         });
-        callback(result, readFileSync(log, 'utf8').trim().split('\n').map(JSON.parse));
+        callback(result, readFileSync(log, 'utf8').trim().split('\n').map(JSON.parse), performance.now() - started);
     } finally {
         rmSync(dir, { recursive: true, force: true });
     }
@@ -69,5 +89,60 @@ test('分屏失败时停止初始化，不启动命令或客户端', () => {
         assert.equal(result.status, 1);
         assert.match(result.stderr, /split failed/);
         assert.equal(calls.length, 3);
+    });
+});
+
+for (const scenario of ['invalid-json', 'schema-error', 'permission-error', 'plain-error']) {
+    test(scenario + ' 立即失败且不启动 server', () => {
+        fixture(scenario, (result, calls) => {
+            assert.equal(result.status, 1, result.stderr);
+            assert.deepEqual(
+                calls.map((args) => args.slice(2)),
+                [['workspace', 'list']],
+            );
+        });
+    });
+}
+for (const scenario of ['startup', 'startup-stdout']) {
+    test(scenario + ' 仅在明确未运行时启动一次并连接', () => {
+        fixture(scenario, (result, calls) => {
+            assert.equal(result.status, 0, result.stderr);
+            assert.equal(calls.filter((args) => args[2] === 'server').length, 1);
+            assert.deepEqual(calls.at(-1), ['--session', 'ait-test']);
+            assert.ok(!calls.some((args) => args[2] === 'pane'));
+        });
+    });
+}
+test('启动后协议错误立即退出，不继续轮询或创建布局', () => {
+    fixture('startup-schema', (result, calls) => {
+        assert.equal(result.status, 1);
+        assert.match(result.stderr, /result.workspaces/);
+        assert.equal(calls.filter((args) => args[2] === 'workspace').length, 2);
+    });
+});
+for (const scenario of ['startup-never', 'startup-hang']) {
+    test(scenario + ' 受总预算限制，无超时后的额外请求', () => {
+        fixture(scenario, (result, calls, elapsed) => {
+            assert.equal(result.error, undefined, '应由启动器退出，不能依赖测试的外部超时');
+            assert.equal(result.status, 1);
+            assert.match(result.stderr, /未就绪|请求超时/);
+            assert.ok(elapsed < 8000, '轮询和请求共享启动预算');
+            assert.equal(calls.filter((args) => args[2] === 'server').length, 1);
+            assert.ok(!calls.some((args) => args[2] === 'pane' || args.length === 2));
+            if (scenario === 'startup-hang') assert.equal(calls.filter((args) => args[2] === 'workspace').length, 2);
+        });
+    });
+}
+
+test('首次查询超时不启动 server，也不初始化布局', () => {
+    fixture('initial-hang', (result, calls, elapsed) => {
+        assert.equal(result.error, undefined);
+        assert.equal(result.status, 1);
+        assert.match(result.stderr, /请求超时/);
+        assert.ok(elapsed < 8000);
+        assert.deepEqual(
+            calls.map((args) => args.slice(2)),
+            [['workspace', 'list']],
+        );
     });
 });

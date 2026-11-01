@@ -17,7 +17,7 @@ brew install yungyu16/iterm2-launcher/iterm2-launcher
 
 从 IDE、快捷键或 GUI 启动时，也需为该入口提供正确的 PATH；nvm 的 Shell 函数不会自动出现在 GUI 环境中。入口启动后会将已解析的 Node 绝对路径传给 iTerm2 中的 Herdr 客户端。
 
-另需安装 [iTerm2](https://iterm2.com/)，并确保指定 Profile 已存在。首次调用可能需要在 macOS 设置中允许终端控制 iTerm2；原生模式还会访问 System Events。使用 Herdr 模式时，按 [Herdr 官方安装说明](https://herdr.dev/docs/install/) 安装 `herdr`，使其在启动终端的 PATH 中可用。安装包不自动安装任何 Agent，也不修改 Shell 启动文件。
+另需安装 [iTerm2](https://iterm2.com/)，并确保指定 Profile 已存在。首次调用可能需要在 macOS 设置中允许终端控制 iTerm2。使用 Herdr 模式时，按 [Herdr 官方安装说明](https://herdr.dev/docs/install/) 安装 `herdr`，使其在启动终端的 PATH 中可用。安装包不自动安装任何 Agent，也不修改 Shell 启动文件。
 
 ## 配置
 
@@ -88,6 +88,17 @@ iterm2-launch --version
 - Herdr 初始化中断时保留已有布局，不自动补发命令；请在 Herdr 中手动检查。暂不支持同一项目的并发首次初始化。
 - iTerm2 保留了已经结束的 Herdr tab 时，请先关闭该 tab 再打开。机器或 Herdr server 重启后的恢复由 Herdr 决定，不保证原进程仍在。
 - Herdr 界面设置仍在它自己的 XDG 配置中，本工具不会覆盖。后台 Herdr 服务由 Herdr 管理，卸载本启动器不会停止它。
+
+### Herdr 错误与等待边界
+
+只有 Herdr 返回结构化错误码 `server_not_running` 时才启动后台服务，并在启动阶段重试。无效 JSON、缺少字段、权限错误、普通文本错误和请求超时会直接失败；不会据此启动另一个 server，也不会把它们当成空布局。
+
+- 版本探测和每次 API 调用最多等待 5 秒，超时会终止本次 CLI 请求进程并报错。
+- 初次查询确认服务未运行后，另给启动阶段 5 秒总预算；轮询间隔和每次查询都计入预算，预算耗尽后不再补发请求。
+- 交互客户端和后台 server 不套用 API 请求超时。正常使用可持续运行，初始化等待超时也不会主动杀掉可能稍后就绪的 server。
+- 超时不等于服务端操作回滚。若创建布局或执行命令已在服务端生效，启动器不会自动重发；应先在 Herdr 中确认状态。
+
+PATH 中第一个可执行 Herdr 的版本探测失败时会保留真实错误，不悄悄换用后面的另一个版本。排查时先确认终端中的 `herdr --version` 和对应 session 是否正常，再重新连接；非空布局仍不会重复启动命令。
 
 ## 升级与卸载
 
