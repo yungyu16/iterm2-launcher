@@ -9,6 +9,8 @@ on run argv
 	end repeat
 	if (count of commands) is 0 then error "至少需要一个面板命令"
 
+	-- 创建 tab 和分屏前先激活应用，保留原生入口的前台初始化时序。
+	tell application id "com.googlecode.iterm2" to activate
 	set targetWindow to helpers's findProfileWindow(profileName, false)
 	set targetTab to missing value
 	tell application id "com.googlecode.iterm2"
